@@ -1,13 +1,16 @@
 import axios from 'axios';
 
-// API Configuration
-const API_CONFIG = {
-  development: 'http://localhost:5000/api',
-  production: 'https://taskmanagement-app-2oq9.onrender.com/api' 
-};
+// Simple environment detection
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-const API_BASE_URL = API_CONFIG[process.env.NODE_ENV] || API_CONFIG.development;
-console.log('🔗 API Base URL:', API_BASE_URL); 
+// API Configuration
+const API_BASE_URL = isLocalhost 
+  ? 'http://localhost:5000/api'  // Local development
+  : 'https://taskmanagement-app-2oq9.onrender.com/api'; // Production
+
+// Debug logging
+console.log('🌍 Running on localhost?', isLocalhost);
+console.log('🔗 API Base URL:', API_BASE_URL);
 
 // Create axios instance
 const api = axios.create({
@@ -18,7 +21,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor for debugging
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
@@ -30,57 +33,43 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
     console.log(`✅ API Response: ${response.status} ${response.config.url}`);
     return response;
   },
   (error) => {
-    console.error('❌ API Error:', error.response?.data || error.message);
-    
-    if (error.response?.status === 404) {
-      console.error('🔍 API endpoint not found. Check your backend URL.');
+    if (error.code === 'ERR_NETWORK') {
+      console.error('🔌 Network Error - Is your backend server running?');
+      if (isLocalhost) {
+        console.error('💡 Start backend: cd backend && node server.js');
+      }
     }
-    
+    console.error('❌ API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
 
 // API methods
 export const notesAPI = {
-  // Get all notes with optional filters
   getNotes: async (filters = {}) => {
     const params = new URLSearchParams();
-    
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== '') {
         params.append(key, value);
       }
     });
-    
     const queryString = params.toString();
     const url = queryString ? `/notes?${queryString}` : '/notes';
-    
     return api.get(url);
   },
 
-  // Get single note
   getNote: (id) => api.get(`/notes/${id}`),
-
-  // Create new note
   createNote: (noteData) => api.post('/notes', noteData),
-
-  // Update note
   updateNote: (id, noteData) => api.put(`/notes/${id}`, noteData),
-
-  // Delete note
   deleteNote: (id) => api.delete(`/notes/${id}`),
-
-  // Toggle note completion
   toggleNote: (id) => api.patch(`/notes/${id}/toggle`),
-
-  // Health check
   healthCheck: () => api.get('/health'),
 };
 

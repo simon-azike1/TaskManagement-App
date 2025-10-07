@@ -3,10 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const notesRoutes = require('./routes/notes');
 
-// Only load .env in development
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+// Always load .env for local development
+require('dotenv').config();
 
 const app = express();
 
@@ -16,23 +14,21 @@ const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   console.error('❌ Missing required environment variables:', missingEnvVars);
-  console.error('📝 Please check your environment variables');
+  console.error('📝 Please check your .env file');
   console.error('🔍 Available env vars:', Object.keys(process.env).filter(key => 
     key.includes('MONGO') || key.includes('JWT') || key.includes('FRONTEND') || key.includes('CORS')
   ));
   process.exit(1);
 }
 
-// Connect to MongoDB
+// Connect to MongoDB (FIXED - removed deprecated options)
 const connectDB = async () => {
   try {
     console.log('🔄 Connecting to MongoDB...');
     console.log('📍 MongoDB URI:', process.env.MONGODB_URI ? 'Set ✅' : 'Missing ❌');
     
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // ✅ Removed deprecated useNewUrlParser and useUnifiedTopology
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     
     console.log(`✅ MongoDB Connected Successfully!`);
     console.log(`📊 Host: ${conn.connection.host}`);
@@ -54,8 +50,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://task-management-7mypw0yav-samzik234s-projects.vercel.app',
-    'https://task-management-app-omega-flax.vercel.app',
+    'http://localhost:3001',
+    'https://task-management-app-omega-flax.vercel.app', // ✅ Your correct frontend URL
     process.env.FRONTEND_URL,
     process.env.CORS_ORIGIN
   ],
@@ -64,9 +60,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Request logging
+// Enhanced request logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const timestamp = new Date().toISOString();
+  const origin = req.headers.origin || 'No origin';
+  console.log(`${timestamp} - ${req.method} ${req.path} - Origin: ${origin}`);
   next();
 });
 
@@ -80,7 +78,14 @@ app.get('/api/health', (req, res) => {
     message: 'Task Manager API is running',
     timestamp: new Date().toISOString(),
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    port: process.env.PORT || 5000,
+    cors: {
+      allowedOrigins: [
+        'http://localhost:3000',
+        'https://task-management-app-omega-flax.vercel.app'
+      ]
+    }
   });
 });
 
@@ -90,41 +95,75 @@ app.get('/', (req, res) => {
     message: '🚀 Task Manager API',
     status: 'Running',
     database: mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Disconnected ❌',
+    environment: process.env.NODE_ENV || 'development',
+    frontend: process.env.FRONTEND_URL || 'http://localhost:3000',
     endpoints: {
       health: '/api/health',
-      notes: '/api/notes'
+      notes: '/api/notes',
+      documentation: '/api'
+    }
+  });
+});
+
+// API documentation endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Task Manager API Documentation',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Disconnected ❌',
+    endpoints: {
+      'GET /': 'API information',
+      'GET /api/health': 'Health check',
+      'GET /api/notes': 'Get all tasks',
+      'POST /api/notes': 'Create new task',
+      'GET /api/notes/:id': 'Get specific task',
+      'PUT /api/notes/:id': 'Update task',
+      'DELETE /api/notes/:id': 'Delete task',
+      'PATCH /api/notes/:id/toggle': 'Toggle task completion'
     }
   });
 });
 
 // Error handling
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.message);
+  console.error('❌ Server Error:', err.message);
   res.status(500).json({ 
     success: false, 
     message: 'Internal server error',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // 404 handler
 app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
-    message: `Route ${req.method} ${req.originalUrl} not found`
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+    availableEndpoints: ['/api/health', '/api/notes', '/api'],
+    timestamp: new Date().toISOString()
   });
 });
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 Frontend: ${process.env.FRONTEND_URL}`);
+  console.log(`\n🚀 Task Manager API Server Started!`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Server URL: http://localhost:${PORT}`);
+  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log(`📋 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`📖 API Docs: http://localhost:${PORT}/api`);
   
   // Debug environment variables
-  console.log('\n📋 Environment Check:');
-  console.log(`MONGODB_URI: ${process.env.MONGODB_URI ? '✅' : '❌'}`);
-  console.log(`JWT_SECRET: ${process.env.JWT_SECRET ? '✅' : '❌'}`);
-  console.log(`FRONTEND_URL: ${process.env.FRONTEND_URL ? '✅' : '❌'}`);
+  console.log(`\n📋 Environment Variables Status:`);
+  console.log(`   MONGODB_URI: ${process.env.MONGODB_URI ? '✅ Set' : '❌ Missing'}`);
+  console.log(`   JWT_SECRET: ${process.env.JWT_SECRET ? '✅ Set' : '⚠️  Missing'}`);
+  console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL ? '✅ Set' : '⚠️  Using default'}`);
+  console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`   PORT: ${PORT}`);
+  
+  console.log(`\n🎯 Ready to accept requests!\n`);
 });
