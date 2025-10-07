@@ -48,7 +48,7 @@ A modern, full-stack task management application built with React (Vite) fronten
 
 📁 **Project Structure**
 
-my-react-app/
+task-manager/
 ├── frontend/                 # React Vite frontend
 │   ├── src/
 │   │   ├── components/       # React components
@@ -56,7 +56,7 @@ my-react-app/
 │   │   ├── App.jsx          # Main app component
 │   │   └── main.jsx         # Entry point
 │   ├── public/
-└── index.html       # HTML template
+│   │   └── index.html       # HTML template
 │   ├── package.json         # Frontend dependencies
 │   └── vite.config.js       # Vite configuration
 │
@@ -70,6 +70,8 @@ my-react-app/
 │   └── .env                 # Environment variables (local)
 │
 └── README.md                # This file
+
+
 
 
 🚀 **Quick Start**
