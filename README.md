@@ -268,7 +268,6 @@ CORS_ORIGIN=https://your-vercel-app.vercel.app
 
 ⸻
 
-
 *Built with grace using React, Node.js, and MongoDB*
 
 <img width="1350" height="634" alt="image" src="https://github.com/user-attachments/assets/a8e380dd-3ba2-4d2b-bfd5-d8193b28502a" />
