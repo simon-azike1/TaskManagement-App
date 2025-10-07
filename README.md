@@ -46,34 +46,6 @@ A modern, full-stack task management application built with React (Vite) fronten
 • **Database**: MongoDB Atlas
 
 
-📁 **Project Structure**
-
-task-manager/
-├── frontend/                 # React Vite frontend
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   ├── services/         # API services
-│   │   ├── App.jsx          # Main app component
-│   │   └── main.jsx         # Entry point
-│   ├── public/
-│   │   └── index.html       # HTML template
-│   ├── package.json         # Frontend dependencies
-│   └── vite.config.js       # Vite configuration
-│
-├── backend/                  # Node.js Express backend
-│   ├── routes/
-│   │   └── notes.js         # Task routes
-│   ├── models/
-│   │   └── Note.js          # Task model
-│   ├── server.js            # Main server file
-│   ├── package.json         # Backend dependencies
-│   └── .env                 # Environment variables (local)
-│
-└── README.md                # This file
-
-
-
-
 🚀 **Quick Start**
 
 **Prerequisites**
