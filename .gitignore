@@ -25,3 +25,6 @@ dist-ssr
 
 #environment vairables
 .env
+
+#environment variable for frontend
+.env.production
