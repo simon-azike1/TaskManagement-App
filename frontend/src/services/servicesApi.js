@@ -3,10 +3,11 @@ import axios from 'axios';
 // API Configuration
 const API_CONFIG = {
   development: 'http://localhost:5000/api',
-  production: 'https://taskmanagement-app-2oq9.onrender.com' 
+  production: 'https://taskmanagement-app-2oq9.onrender.com/api' 
 };
 
 const API_BASE_URL = API_CONFIG[process.env.NODE_ENV] || API_CONFIG.development;
+console.log('🔗 API Base URL:', API_BASE_URL); 
 
 // Create axios instance
 const api = axios.create({
