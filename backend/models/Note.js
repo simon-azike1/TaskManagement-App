@@ -1,23 +1,17 @@
 const mongoose = require('mongoose');
 
 const noteSchema = new mongoose.Schema({
-  // Common fields that might exist
-  title: {
-    type: String,
-    required: false // Make flexible for existing data
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true // Each note is linked to a user
   },
-  content: {
-    type: String,
-    required: false
-  },
-  description: {
-    type: String,
-    required: false
-  },
-  // Task-like fields we can add
+  title: String,
+  content: String,
+  description: String,
   category: {
     type: String,
-    enum: ['work', 'personal', 'shopping', 'health', 'other'],
+    enum: ['work', 'personal', 'shopping', 'health', 'other', 'welcome'],
     default: 'other'
   },
   priority: {
@@ -34,25 +28,20 @@ const noteSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  dueDate: {
-    type: Date
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-}, { 
-  strict: false, // Allow fields not in schema (for existing data)
-  collection: 'notes' // Use your existing collection
+  dueDate: Date
+}, {
+  strict: false,          // Allows extra fields if needed
+  collection: 'notes',
+  timestamps: true        // Adds createdAt & updatedAt automatically
 });
 
-// Update timestamp on save
+// Pre-save hook to auto-update 'completed' based on 'status'
 noteSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
+  if (this.status === 'completed') {
+    this.completed = true;
+  } else if (this.status !== 'completed') {
+    this.completed = false;
+  }
   next();
 });
 

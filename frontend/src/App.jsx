@@ -1,311 +1,533 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  CheckCircle2, 
-  AlertCircle, 
-  Briefcase,
-  TrendingUp
-} from 'lucide-react';
-import { notesAPI } from './services/servicesApi';
-import TaskList from './components/TaskList';
-import TaskForm from './components/TaskForm';
-import FilterBar from './components/FilterBar';
-import StatsCards from './components/StatsCards';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import Navbar from './components/Navbar';
+import LandingPage from './components/LandingPage';
+import AboutPage from './components/AboutPage';
+import ContactPage from './components/ContactPage';
+import ServicesPage from './components/ServicesPage';
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
+import ProfilePage from './components/ProfilePage';
+import Dashboard from './components/Dashboard';
+import { authAPI } from './services/servicesApi';
+
 
 function App() {
-  // Core state - Initialize tasks as empty array
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-  
-  // Filter state
-  const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    category: '',
-    priority: '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
-  });
+  const [currentPage, setCurrentPage] = useState('home');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
 
-  // UI state
-  const [viewMode, setViewMode] = useState('grid');
-
-  // Fetch tasks
-  const fetchTasks = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await notesAPI.getNotes(filters);
-      console.log('Full API Response:', response);
-      
-      // Your API returns: { success: true, count: 1, data: [...] }
-      // So we need response.data.data
-      const tasksData = response.data?.data || [];
-      
-      setTasks(tasksData);
-      console.log('Tasks loaded:', tasksData.length, 'tasks');
-      
-    } catch (err) {
-      console.error('Error fetching tasks:', err);
-      setError('Failed to fetch tasks. Please check your connection.');
-      setTasks([]); // Ensure tasks is always an array
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load tasks on mount and filter change
+  // Check for existing authentication on app load
   useEffect(() => {
-    fetchTasks();
-  }, [filters]);
-
-  // Task operations
-  const handleCreateTask = async (taskData) => {
-    try {
-      console.log('Creating task:', taskData);
-      const response = await notesAPI.createNote(taskData);
-      console.log('Task created:', response.data);
-      await fetchTasks(); // Refresh the list
-      setShowForm(false);
-      showSuccessMessage('Task created successfully! 🎉');
-    } catch (err) {
-      console.error('Error creating task:', err);
-      setError('Failed to create task');
-    }
-  };
-
-  const handleUpdateTask = async (taskData) => {
-    try {
-      console.log('Updating task:', editingTask._id, taskData);
-      const response = await notesAPI.updateNote(editingTask._id, taskData);
-      console.log('Task updated:', response.data);
-      await fetchTasks(); // Refresh the list
-      setEditingTask(null);
-      setShowForm(false);
-      showSuccessMessage('Task updated successfully! ✅');
-    } catch (err) {
-      console.error('Error updating task:', err);
-      setError('Failed to update task');
-    }
-  };
-
-  const handleDeleteTask = async (taskId) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    const checkAuth = async () => {
       try {
-        console.log('Deleting task:', taskId);
-        const response = await notesAPI.deleteNote(taskId);
-        console.log('Task deleted:', response.data);
-        await fetchTasks(); // Refresh the list
-        showSuccessMessage('Task deleted successfully! 🗑️');
-      } catch (err) {
-        console.error('Error deleting task:', err);
-        setError('Failed to delete task');
-      }
-    }
-  };
-
-  const handleToggleTask = async (taskId) => {
-    try {
-      console.log('Toggling task:', taskId);
-      const response = await notesAPI.toggleNote(taskId);
-      console.log('Task toggled:', response.data);
-      await fetchTasks(); // Refresh the list
-    } catch (err) {
-      console.error('Error toggling task:', err);
-      // If toggle endpoint doesn't exist, try manual update
-      try {
-        const task = tasks.find(t => t._id === taskId);
-        if (task) {
-          await notesAPI.updateNote(taskId, {
-            ...task,
-            completed: !task.completed,
-            status: !task.completed ? 'completed' : 'pending'
-          });
-          await fetchTasks();
+        setAuthError('');
+        console.log('🔄 Checking authentication status...');
+        
+        // Check if user is authenticated using authAPI
+        const isAuth = authAPI.isAuthenticated();
+        const userData = authAPI.getCurrentUser();
+        
+        console.log('Auth status:', { isAuth, userData });
+        
+        if (isAuth && userData) {
+          console.log('✅ User authenticated:', userData.email);
+          setIsAuthenticated(true);
+          setUser(userData);
+          
+          // If user was on a protected page, keep them there
+          const protectedPages = ['dashboard', 'profile', 'billing'];
+          if (!protectedPages.includes(currentPage)) {
+            // Don't auto-redirect to dashboard, let them stay on home
+            console.log('User authenticated but staying on current page:', currentPage);
+          }
+        } else {
+          console.log('❌ No valid authentication found');
+          // Clear any stale localStorage data
+          localStorage.removeItem('taskmaster_auth');
+          localStorage.removeItem('taskmaster_user');
+          setIsAuthenticated(false);
+          setUser(null);
         }
-      } catch (fallbackErr) {
-        setError('Failed to toggle task');
+      } catch (error) {
+        console.error('❌ Auth check failed:', error);
+        setAuthError('Authentication check failed');
+        setIsAuthenticated(false);
+        setUser(null);
+        
+        // Clear potentially corrupted auth data
+        localStorage.removeItem('taskmaster_auth');
+        localStorage.removeItem('taskmaster_user');
+      } finally {
+        setIsLoading(false);
       }
-    }
-  };
-
-  const handleEditTask = (task) => {
-    console.log('Editing task:', task);
-    setEditingTask(task);
-    setShowForm(true);
-  };
-
-  const handleBulkDelete = async (taskIds) => {
-    if (window.confirm(`Are you sure you want to delete ${taskIds.length} tasks?`)) {
-      try {
-        console.log('Bulk deleting tasks:', taskIds);
-        await Promise.all(taskIds.map(id => notesAPI.deleteNote(id)));
-        await fetchTasks(); // Refresh the list
-        showSuccessMessage(`${taskIds.length} tasks deleted successfully! 🗑️`);
-      } catch (err) {
-        console.error('Error bulk deleting tasks:', err);
-        setError('Failed to delete tasks');
-      }
-    }
-  };
-
-  // Success message helper
-  const showSuccessMessage = (message) => {
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in border border-blue-500';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
-  };
-
-  // Calculate stats - Ensure tasks is always an array
-  const safeStats = React.useMemo(() => {
-    const taskArray = Array.isArray(tasks) ? tasks : [];
-    
-    const completed = taskArray.filter(t => t && t.completed).length;
-    const total = taskArray.length;
-    
-    return {
-      total,
-      completed,
-      pending: taskArray.filter(t => t && !t.completed && t.status !== 'in-progress').length,
-      inProgress: taskArray.filter(t => t && t.status === 'in-progress').length,
-      overdue: taskArray.filter(t => {
-        if (!t || !t.dueDate || t.completed) return false;
-        return new Date(t.dueDate) < new Date();
-      }).length,
-      highPriority: taskArray.filter(t => t && t.priority === 'high' && !t.completed).length,
-      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
     };
-  }, [tasks]);
+
+    checkAuth();
+  }, []);
+
+  // Handle navigation between pages
+  const handleNavigation = (page) => {
+    console.log('🧭 Navigating to:', page);
+    setAuthError(''); // Clear any auth errors
+    
+    // Handle authentication-required pages
+    if (['dashboard', 'profile', 'billing'].includes(page) && !isAuthenticated) {
+      console.log('🔒 Protected page requires authentication, redirecting to login');
+      setCurrentPage('login');
+      return;
+    }
+    
+    setCurrentPage(page);
+  };
+
+  // Handle successful login
+const handleLogin = async (userData) => {
+  try {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setAuthError('');
+    localStorage.setItem('taskmaster_auth', 'true');
+    localStorage.setItem('taskmaster_user', JSON.stringify(userData));
+    setCurrentPage('dashboard');
+
+    toast.success(`Welcome back, ${userData.firstName}! 🎉`); // <-- toast added
+  } catch (error) {
+    console.error('❌ Login handler error:', error);
+    setAuthError('Login processing failed');
+    toast.error('Login failed ❌'); // <-- toast added
+  }
+};
+
+// Handle successful signup
+const handleSignup = async (userData) => {
+  try {
+    setIsAuthenticated(true);
+    setUser(userData);
+    setAuthError('');
+    localStorage.setItem('taskmaster_auth', 'true');
+    localStorage.setItem('taskmaster_user', JSON.stringify(userData));
+    setCurrentPage('dashboard');
+
+    toast.success(`Account created successfully, ${userData.firstName}! 🎉`);
+  } catch (error) {
+    console.error('❌ Signup handler error:', error);
+    setAuthError('Signup processing failed');
+    toast.error('Signup failed ❌');
+  }
+};
+
+// Handle logout
+const handleLogout = async () => {
+  try {
+    await authAPI.logout?.();
+    setIsAuthenticated(false);
+    setUser(null);
+    setAuthError('');
+    localStorage.removeItem('taskmaster_auth');
+    localStorage.removeItem('taskmaster_user');
+    setCurrentPage('home');
+
+    toast.info('Logged out successfully 👋');
+  } catch (error) {
+    console.error('❌ Logout API error:', error);
+    toast.error('Logout failed ❌');
+  }
+};
+
+
+  // Handle user profile updates
+  const handleUpdateUser = (updatedUser) => {
+    console.log('🔄 Updating user profile:', updatedUser.email);
+    setUser(updatedUser);
+    localStorage.setItem('taskmaster_user', JSON.stringify(updatedUser));
+    console.log('✅ User profile updated successfully');
+  };
+
+  // Show loading spinner while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600">Loading TaskMaster...</p>
+          <p className="mt-2 text-sm text-slate-500">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render current page
+  const renderPage = () => {
+    console.log('🎨 Rendering page:', currentPage, '| Auth:', isAuthenticated);
+    
+    switch (currentPage) {
+      case 'home':
+        return (
+          <LandingPage 
+            onNavigate={handleNavigation} 
+            isAuthenticated={isAuthenticated} 
+            user={user} 
+          />
+        );
+      
+      case 'about':
+        return <AboutPage onNavigate={handleNavigation} />;
+      
+      case 'contact':
+        return <ContactPage onNavigate={handleNavigation} />;
+      
+      case 'services':
+        return <ServicesPage onNavigate={handleNavigation} />;
+      
+      case 'login':
+        // Redirect authenticated users away from login
+        if (isAuthenticated) {
+          console.log('🔄 Authenticated user accessing login, redirecting to dashboard');
+          setTimeout(() => setCurrentPage('dashboard'), 100);
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-slate-600">Redirecting to dashboard...</p>
+              </div>
+            </div>
+          );
+        }
+        
+        return (
+          <LoginPage 
+            onNavigate={handleNavigation} 
+            onLogin={handleLogin}
+            error={authError}
+          />
+        );
+      
+      case 'signup':
+        // Redirect authenticated users away from signup
+        if (isAuthenticated) {
+          console.log('🔄 Authenticated user accessing signup, redirecting to dashboard');
+          setTimeout(() => setCurrentPage('dashboard'), 100);
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-slate-600">Redirecting to dashboard...</p>
+              </div>
+            </div>
+          );
+        }
+        
+        return (
+          <SignupPage 
+            onNavigate={handleNavigation} 
+            onSignup={handleSignup}
+            error={authError}
+          />
+        );
+      
+      case 'dashboard':
+        if (isAuthenticated && user) {
+          return (
+            <Dashboard 
+              user={user} 
+              onNavigate={handleNavigation}
+              onLogout={handleLogout}
+            />
+          );
+        }
+        
+        console.log('🔒 Unauthenticated access to dashboard, redirecting to login');
+        return (
+          <LoginPage 
+            onNavigate={handleNavigation} 
+            onLogin={handleLogin}
+            error="Please log in to access your dashboard"
+          />
+        );
+      
+      case 'profile':
+        if (isAuthenticated && user) {
+          return (
+            <ProfilePage 
+              user={user} 
+              onNavigate={handleNavigation}
+              onUpdateUser={handleUpdateUser}
+              onLogout={handleLogout}
+            />
+          );
+        }
+        
+        console.log('🔒 Unauthenticated access to profile, redirecting to login');
+        return (
+          <LoginPage 
+            onNavigate={handleNavigation} 
+            onLogin={handleLogin}
+            error="Please log in to access your profile"
+          />
+        );
+      
+      case 'billing':
+        if (isAuthenticated && user) {
+          return (
+            <div className="min-h-screen bg-gray-50">
+              {/* Billing Header */}
+              <div className="bg-white border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="py-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h1 className="text-2xl font-bold text-gray-900">
+                          Billing & Subscription
+                        </h1>
+                        <p className="text-gray-600 mt-1">
+                          Manage your subscription and billing information
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Account: {user.email}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleNavigation('profile')}
+                          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          Profile
+                        </button>
+                        <button
+                          onClick={() => handleNavigation('dashboard')}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Back to Dashboard
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Content */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Current Plan */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-4">Current Plan</h2>
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900">Free Plan</h3>
+                            <p className="text-gray-600">Perfect for getting started</p>
+                            <div className="mt-4">
+                              <p className="text-sm text-gray-600">✓ Unlimited tasks</p>
+                              <p className="text-sm text-gray-600">✓ Basic features</p>
+                              <p className="text-sm text-gray-600">✓ Email support</p>
+                              <p className="text-sm text-gray-600">✓ Individual workspace</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-3xl font-bold text-gray-900">$0</p>
+                            <p className="text-gray-600">per month</p>
+                            <div className="mt-2">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Upgrade Options */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-4">Upgrade Your Plan</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="border border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">Pro Plan</h3>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">$9.99</p>
+                          <p className="text-gray-600 mb-4">per month</p>
+                          <ul className="space-y-2 mb-6">
+                            <li className="text-sm text-gray-600">✓ Everything in Free</li>
+                            <li className="text-sm text-gray-600">✓ Advanced analytics</li>
+                            <li className="text-sm text-gray-600">✓ Priority support</li>
+                            <li className="text-sm text-gray-600">✓ Custom categories</li>
+                            <li className="text-sm text-gray-600">✓ Export features</li>
+                          </ul>
+                          <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Upgrade to Pro
+                          </button>
+                        </div>
+
+                        <div className="border border-purple-200 rounded-lg p-6 relative hover:border-purple-300 transition-colors">
+                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                              Most Popular
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Plan</h3>
+                          <p className="text-3xl font-bold text-gray-900 mb-1">$19.99</p>
+                          <p className="text-gray-600 mb-4">per month</p>
+                          <ul className="space-y-2 mb-6">
+                            <li className="text-sm text-gray-600">✓ Everything in Pro</li>
+                            <li className="text-sm text-gray-600">✓ Team collaboration</li>
+                            <li className="text-sm text-gray-600">✓ Advanced integrations</li>
+                            <li className="text-sm text-gray-600">✓ Custom workflows</li>
+                            <li className="text-sm text-gray-600">✓ 24/7 phone support</li>
+                          </ul>
+                          <button className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            Upgrade to Business
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Billing Summary */}
+                  <div className="space-y-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Summary</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Account Holder</span>
+                          <span className="font-medium">{user.firstName} {user.lastName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Email</span>
+                          <span className="font-medium text-sm">{user.email}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Current Plan</span>
+                          <span className="font-medium">Free</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Member Since</span>
+                          <span className="font-medium">
+                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Next Billing Date</span>
+                          <span className="font-medium">N/A</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Payment Method</span>
+                          <span className="font-medium">None</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage This Month</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-gray-600">Tasks Created</span>
+                            <span className="font-medium">Unlimited</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-green-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Free plan includes unlimited tasks</p>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-gray-600">Storage Used</span>
+                            <span className="font-medium">Unlimited</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">No storage limits on any plan</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing History</h3>
+                      <div className="text-center py-4">
+                        <div className="bg-gray-100 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-600 font-medium">No billing history</p>
+                        <p className="text-sm text-gray-500">You're on the free plan</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        console.log('🔒 Unauthenticated access to billing, redirecting to login');
+        return (
+          <LoginPage 
+            onNavigate={handleNavigation} 
+            onLogin={handleLogin}
+            error="Please log in to access billing information"
+          />
+        );
+      
+      default:
+        console.log('🏠 Default case - rendering LandingPage');
+        return (
+          <LandingPage 
+            onNavigate={handleNavigation} 
+            isAuthenticated={isAuthenticated} 
+            user={user} 
+          />
+        );
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <header className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-xl animate-fade-in border border-slate-200">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-2">
-              <h1 className="flex items-center gap-3 text-3xl md:text-4xl font-bold text-slate-800">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm">
-                  <Briefcase className="w-8 h-8 text-white" />
-                </div>
-                Task Manager
-                <TrendingUp className="w-6 h-6 text-blue-600" />
-              </h1>
-              <p className="text-slate-600 text-lg">
-                Professional task management for enhanced productivity
-              </p>
-              <div className="flex items-center gap-4 text-sm text-slate-500">
-                <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  {safeStats.total} Total Tasks
-                </span>
-                <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  {safeStats.completionRate}% Complete
-                </span>
-                {safeStats.overdue > 0 && (
-                  <span className="flex items-center gap-1 text-red-600">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    {safeStats.overdue} Overdue
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Add Task Button */}
-              <button 
-                onClick={() => {
-                  setEditingTask(null);
-                  setShowForm(true);
-                }}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md"
-              >
-                <Plus className="w-5 h-5" />
-                <span className="hidden sm:inline">Add Task</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Stats Cards */}
-        <StatsCards stats={safeStats} />
-
-        {/* Filter Bar */}
-        <FilterBar 
-          filters={filters} 
-          onFiltersChange={setFilters}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
+    <div className="App">
+      {/* Only show Navbar on non-dashboard pages */}
+      {currentPage !== 'dashboard' && (
+        <Navbar 
+          currentPage={currentPage} 
+          onNavigate={handleNavigation}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onLogout={handleLogout}
         />
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 border-l-4 border-l-red-500 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <span className="text-red-800 font-medium flex-1">{error}</span>
-              <button 
-                onClick={() => setError(null)}
-                className="text-red-400 hover:text-red-600 text-xl font-bold transition-colors"
-              >
-                ×
-              </button>
+      )}
+      
+      {/* Show auth error if present */}
+      {authError && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{authError}</p>
             </div>
           </div>
-        )}
+        </div>
+      )}
+      
+      {renderPage()}
+  <ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={true}
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+/>
 
-        {/* Main Content */}
-        <main className="animate-fade-in">
-          {loading ? (
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-12 text-center shadow-lg border border-slate-200">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-4">
-                <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-              </div>
-              <p className="text-slate-800 text-lg font-semibold">Loading your tasks...</p>
-              <p className="text-slate-500 text-sm mt-2">Please wait while we fetch your data</p>
-            </div>
-          ) : (
-            <TaskList 
-              tasks={Array.isArray(tasks) ? tasks : []}
-              onEdit={handleEditTask}
-              onDelete={handleDeleteTask}
-              onToggle={handleToggleTask}
-              onBulkDelete={handleBulkDelete}
-              viewMode={viewMode}
-            />
-          )}
-        </main>
-
-        {/* Task Form Modal */}
-        {showForm && (
-          <TaskForm
-            task={editingTask}
-            onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingTask(null);
-            }}
-          />
-        )}
-
-        {/* Footer */}
-        <footer className="text-center py-6">
-          <p className="text-slate-500 text-sm">
-            Built with React & Node.js • Professional Task Management System
-          </p>
-        </footer>
-      </div>
     </div>
   );
 }
