@@ -115,7 +115,7 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
               <div className="group relative rounded-3xl overflow-hidden bg-white/70 dark:bg-black/30 border border-white/30 dark:border-white/10 backdrop-blur-md shadow-2xl">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/10 to-transparent dark:from-white/5" />
                <img
-               src="./checklist.jpg"
+               src="https://cdn.pixabay.com/photo/2021/04/24/09/51/checklist-6203690_1280.jpg"
                alt="Tm"
                loading="eager"
                className="h-[520px] w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.02] group-hover:-rotate-[0.25deg] motion-reduce:transform-none"/>
