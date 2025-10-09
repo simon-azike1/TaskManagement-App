@@ -1,4 +1,5 @@
  import React, { useEffect, useState } from "react";
+ import ProfessionalFooter from "./Footer";
 
 
 const LandingPage = ({ onNavigate, isAuthenticated }) => {
@@ -245,6 +246,8 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
           </div>
         </div>
       </section>
+
+  <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

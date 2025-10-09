@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Users, Target, Heart, Shield, ArrowRight, Zap, CheckCircle, Lock, Smartphone, Clock, TrendingUp } from "lucide-react";
+import ProfessionalFooter from "./Footer";
+
 
 const AboutPage = ({ onNavigate }) => {
   const [mounted, setMounted] = useState(false);
@@ -268,6 +270,8 @@ const AboutPage = ({ onNavigate }) => {
           </div>
         </section> */}
       </div>
+      
+   <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

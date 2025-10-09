@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProfessionalFooter from './Footer';
 import {
   Mail,
   Phone,
@@ -453,6 +454,8 @@ const ContactPage = ({ onNavigate }) => {
           </div>
         </section>
       </div>
+      
+  <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

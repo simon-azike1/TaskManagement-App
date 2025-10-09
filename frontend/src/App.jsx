@@ -12,6 +12,7 @@ import SignupPage from './components/SignupPage';
 import ProfilePage from './components/ProfilePage';
 import Dashboard from './components/Dashboard';
 import { authAPI } from './services/servicesApi';
+// import Footer from './components/Footer'
 
 
 function App() {
@@ -527,7 +528,7 @@ const handleLogout = async () => {
   draggable
   pauseOnHover
 />
-
+{/* <Footer  onNavigate={handleNavigation} /> */}
     </div>
   );
 }

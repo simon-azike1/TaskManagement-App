@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ProfessionalFooter from "./Footer";
 import {
   ListChecks,
   Edit3,
@@ -156,6 +157,7 @@ const ServicesPage = ({ onNavigate }) => {
           </div>
         </section>
       </div>
+      <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

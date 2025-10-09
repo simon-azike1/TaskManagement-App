@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProfessionalFooter from './Footer';
 import { 
   User, 
   Mail, 
@@ -881,6 +882,7 @@ const ProfilePage = ({ user, onNavigate, onUpdateUser }) => {
           </div>
         </div>
       </div>
+      <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

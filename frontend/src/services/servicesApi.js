@@ -7,7 +7,7 @@ const isLocalhost =
 
 // 🌐 API Base URL
 const API_BASE_URL = isLocalhost
-  ? "http://localhost:5000/api"
+  ? "http://localhost:10000/api"  // ✅ FIXED: Changed from 1000 to 10000
   : "https://taskmanagement-app-2oq9.onrender.com/api";
 
 // 🧭 Debug logging

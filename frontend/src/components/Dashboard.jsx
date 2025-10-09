@@ -6,6 +6,7 @@ import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 import { notesAPI, authAPI } from '../services/servicesApi';
 import { toast } from 'react-toastify';
+import ProfessionalFooter from './Footer';
 
 const Dashboard = ({ user, onNavigate, onLogout }) => {
   const [mounted, setMounted] = useState(false);
@@ -487,6 +488,8 @@ const Dashboard = ({ user, onNavigate, onLogout }) => {
           }}
         />
       )}
+      
+  <ProfessionalFooter onNavigate={onNavigate} />
     </div>
   );
 };

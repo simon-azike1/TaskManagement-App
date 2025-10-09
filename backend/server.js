@@ -17,17 +17,25 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const CONFIG = {
   development: {
-    port: process.env.PORT || 5000,
+    port: process.env.PORT || 10000, // ✅ Changed from 5000 to 10000
     frontendUrl: 'http://localhost:5173',
-    corsOrigins: ['http://localhost:5173', 'http://localhost:3000']
+    corsOrigins: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000'
+    ]
   },
   production: {
-    port: process.env.PORT || 1000,
+    port: process.env.PORT || 10000, // ✅ Changed from 1000 to 10000
     frontendUrl: process.env.FRONTEND_URL || 'https://task-management-app-omega-flax.vercel.app',
     corsOrigins: [
       process.env.FRONTEND_URL,
-      process.env.CORS_ORIGIN
-    ]
+      process.env.CORS_ORIGIN,
+      'https://task-management-app-omega-flax.vercel.app',
+      'http://localhost:5173', // ✅ Added for local testing with production DB
+      'http://localhost:3000'
+    ].filter(Boolean) // Remove undefined/null values
   }
 };
 
@@ -57,9 +65,16 @@ app.use(helmet({
 // CORS
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow Postman, mobile apps, etc.
-    if (currentConfig.corsOrigins.includes(origin)) return callback(null, true);
+    // Allow requests with no origin (Postman, mobile apps, server-to-server)
+    if (!origin) return callback(null, true);
+    
+    if (currentConfig.corsOrigins.includes(origin)) {
+      console.log(`✅ CORS accepted: ${origin}`);
+      return callback(null, true);
+    }
+    
     console.warn(`❌ CORS blocked: ${origin}`);
+    console.warn(`Allowed origins:`, currentConfig.corsOrigins);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -67,7 +82,10 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-app.use(cors(corsOptions)); // handle preflight
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly (use regex instead of *)
+// app.options(cors(corsOptions));
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));
@@ -76,13 +94,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ===== Rate Limiting =====
 app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
-  max: 100,
+  max: isDevelopment ? 500 : 100, // More lenient in development
   message: { success: false, message: 'Too many requests, try again later.' }
 }));
 
 app.use('/api/auth', rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isDevelopment ? 50 : 10,
+  max: isDevelopment ? 100 : 10, // More lenient in development
   message: { success: false, message: 'Too many authentication attempts, try again later.' }
 }));
 
@@ -104,31 +122,45 @@ app.get('/api/health', (req, res) => {
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
     environment: process.env.NODE_ENV || 'development',
     frontend: currentConfig.frontendUrl,
+    corsOrigins: currentConfig.corsOrigins,
     timestamp: new Date().toISOString()
   });
 });
 
 // Root
 app.get('/', (req, res) => {
-  res.json({ message: '🚀 Task Manager API', environment: process.env.NODE_ENV || 'development' });
+  res.json({ 
+    message: '🚀 Task Manager API', 
+    environment: process.env.NODE_ENV || 'development',
+    isDevelopment,
+    allowedOrigins: currentConfig.corsOrigins
+  });
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err.message);
-  res.status(500).json({ success: false, message: err.message, timestamp: new Date().toISOString() });
+  res.status(500).json({ 
+    success: false, 
+    message: err.message, 
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found', timestamp: new Date().toISOString() });
+  res.status(404).json({ 
+    success: false, 
+    message: 'Route not found', 
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // ===== Start Server =====
 const PORT = currentConfig.port;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 API running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'} (isDevelopment: ${isDevelopment})`);
   console.log(`Frontend URL: ${currentConfig.frontendUrl}`);
   console.log(`CORS Origins: ${currentConfig.corsOrigins.join(', ')}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);

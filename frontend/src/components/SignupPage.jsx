@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import ProfessionalFooter from "./Footer";
 import { authAPI } from "../services/servicesApi";
 
 const emailRegex =
@@ -427,6 +428,7 @@ const SignupPage = ({ onNavigate, onSignup, error: propError }) => {
           </div>
         </div>
       </div>
+      <ProfessionalFooter noValidate={onNavigate}/>
     </div>
   );
 };
