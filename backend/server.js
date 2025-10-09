@@ -67,8 +67,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-app.use(cors(corsOptions));
-app.options('/:path(*)', cors(corsOptions)); // handle preflight
+app.use(cors(corsOptions)); // handle preflight
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));
