@@ -1,6 +1,4 @@
  import React, { useEffect, useState } from "react";
- import heroImage from "../assets/checklist.jpg";
-import heroPoster from "../assets/simon.png";
 
 
 const LandingPage = ({ onNavigate, isAuthenticated }) => {
@@ -27,17 +25,17 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-black dark:via-black dark:to-black">
       {/* Background video — replace with your assets */}
       <div className="absolute inset-0 -z-10">
-      <video
-  className="h-full w-full object-cover motion-reduce:hidden"
-  autoPlay
-  muted
-  loop
-  playsInline
-  poster={heroPoster}
-  aria-hidden="true"
->
-  <source src={heroPoster} type="video/mp4" />
-</video>
+     <video
+        className="absolute top-0 left-0 h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster="/heroVideo"
+      >
+        <source src="/heroVideo" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
 
         <div className="absolute inset-0 bg-black/40" />
       </div>
@@ -117,7 +115,7 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
               <div className="group relative rounded-3xl overflow-hidden bg-white/70 dark:bg-black/30 border border-white/30 dark:border-white/10 backdrop-blur-md shadow-2xl">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/10 to-transparent dark:from-white/5" />
                <img
-  src={heroImage}
+  src="/checklist.jpg"
   alt="Done"
   loading="eager"
   className="h-[520px] w-full object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-[1.02] group-hover:-rotate-[0.25deg] motion-reduce:transform-none"
