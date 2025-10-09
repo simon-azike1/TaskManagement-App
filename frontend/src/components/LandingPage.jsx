@@ -58,8 +58,8 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
                 Organize your work, beautifully
               </h1>
 
-              <p className="mt-3 text-lg text-zinc-700 dark:text-zinc-200">
-                Plan, track, and ship without the clutter.
+              <p className="mt-3  text-zinc-700 dark:text-zinc-200">
+                TaskMaster is a powerful task management platform designed to help you and your team stay organized, boost productivity, and achieve your goals efficiently.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">

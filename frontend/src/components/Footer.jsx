@@ -44,7 +44,7 @@ const ProfessionalFooter = ({ onNavigate }) => {
                 <div>
                   <div className="text-xs text-slate-500">Email</div>
                   <a href="mailto:support@taskmaster.com" className="text-slate-300 hover:text-white transition-colors">
-                    support@taskmaster.com
+                   azikeshinye@gmail.com
                   </a>
                 </div>
               </div>
@@ -55,7 +55,7 @@ const ProfessionalFooter = ({ onNavigate }) => {
                 <div>
                   <div className="text-xs text-slate-500">Phone</div>
                   <a href="tel:+1234567890" className="text-slate-300 hover:text-white transition-colors">
-                    +1 (234) 567-890
+                    +1 (212) 751-780853
                   </a>
                 </div>
               </div>
@@ -65,7 +65,7 @@ const ProfessionalFooter = ({ onNavigate }) => {
                 </div>
                 <div>
                   <div className="text-xs text-slate-500">Address</div>
-                  <span className="text-slate-300">123 Business Ave, Suite 100, New York, NY 10001</span>
+                  <span className="text-slate-300">Bab Cheffa Sale, Rabat, Morocco</span>
                 </div>
               </div>
             </div>
