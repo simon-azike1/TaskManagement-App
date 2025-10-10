@@ -49,8 +49,8 @@ function App() {
         } else {
           console.log('❌ No valid authentication found');
           // Clear any stale localStorage data
-          localStorage.removeItem('taskmaster_auth');
-          localStorage.removeItem('taskmaster_user');
+          localStorage.removeItem('chetro_auth');
+          localStorage.removeItem('chetro_user');
           setIsAuthenticated(false);
           setUser(null);
         }

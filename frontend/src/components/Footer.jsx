@@ -27,12 +27,12 @@ const ProfessionalFooter = ({ onNavigate }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white">TaskMaster</h3>
+                <h3 className="text-2xl font-bold text-white">Chetro</h3>
                 <p className="text-xs text-slate-400">Professional Task Management</p>
               </div>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              TaskMaster is a powerful task management platform designed to help individuals and teams stay organized, boost productivity, and achieve their goals efficiently.
+              Chetro is a powerful task management platform designed to help individuals and teams stay organized, boost productivity, and achieve their goals efficiently.
             </p>
             
             {/* Contact Info */}
@@ -43,7 +43,7 @@ const ProfessionalFooter = ({ onNavigate }) => {
                 </div>
                 <div>
                   <div className="text-xs text-slate-500">Email</div>
-                  <a href="mailto:support@taskmaster.com" className="text-slate-300 hover:text-white transition-colors">
+                  <a href="mailto:azikeshinye.com" className="text-slate-300 hover:text-white transition-colors">
                    azikeshinye@gmail.com
                   </a>
                 </div>
@@ -211,7 +211,7 @@ const ProfessionalFooter = ({ onNavigate }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-slate-500 text-center md:text-left">
-              © {currentYear} TaskMaster Inc. All rights reserved.
+              © {currentYear} Chetro Inc. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
               <a href="#" className="text-slate-500 hover:text-white transition-colors">Privacy Policy</a>

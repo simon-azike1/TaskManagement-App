@@ -124,7 +124,7 @@ const ServicesPage = ({ onNavigate }) => {
         {/* What we offer (limited to current capabilities) */}
         <section className="mt-12">
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">
-            What the app can do now
+           Everything You Can Do with <i>Chetro!</i>
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {appServices.map(({ icon: Icon, title, description, features }, i) => (

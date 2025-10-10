@@ -34,7 +34,7 @@ const AboutPage = ({ onNavigate }) => {
     {
       icon: Zap,
       title: "Lightning-Fast Performance",
-      description: "No lag, no delays. TaskMaster is built for speed, ensuring you can add, edit, and complete tasks in milliseconds."
+      description: "No lag, no delays. Chetro is built for speed, ensuring you can add, edit, and complete tasks in milliseconds."
     },
     {
       icon: Lock,
@@ -81,11 +81,11 @@ const AboutPage = ({ onNavigate }) => {
     }
   ];
 
-  const team = [
-    { name: "Sarah Johnson", role: "Founder & CEO", avatar: "👩‍💼" },
-    { name: "Mike Chen", role: "Lead Developer", avatar: "👨‍💻" },
-    { name: "Emily Rodriguez", role: "UX Designer", avatar: "👩‍🎨" }
-  ];
+  // const team = [
+  //   { name: "Sarah Johnson", role: "Founder & CEO", avatar: "👩‍💼" },
+  //   { name: "Mike Chen", role: "Lead Developer", avatar: "👨‍💻" },
+  //   { name: "Emily Rodriguez", role: "UX Designer", avatar: "👩‍🎨" }
+  // ];
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
@@ -104,14 +104,15 @@ const AboutPage = ({ onNavigate }) => {
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 px-4 py-1.5 text-sm font-medium mb-6">
               <Users className="h-4 w-4" />
-              <span>About TaskMaster</span>
+              <span>About Chetro</span>
             </div>
+          
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-              Task management that feels like magic
+           Because staying productive shouldn’t feel like a chore.
             </h1>
             <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed">
               We believe productivity tools should be simple, beautiful, and actually help you get things done. 
-              TaskMaster is built for people who want clarity, not complexity.
+             Chetro is built for people who want clarity, not complexity.
             </p>
 
             {/* <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -159,7 +160,7 @@ const AboutPage = ({ onNavigate }) => {
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-3">What We Do</h2>
             <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-              TaskMaster combines powerful features with simplicity to help you manage your tasks effortlessly
+             Chetro combines powerful features with simplicity to help you manage your tasks effortlessly
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -183,7 +184,7 @@ const AboutPage = ({ onNavigate }) => {
         <section className="mt-16">
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-3">
-              Why TaskMaster is Different
+              Why Chetro is Different
             </h2>
             <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
               We're not just another task manager. Here's what makes us stand out from the crowd
@@ -250,7 +251,7 @@ const AboutPage = ({ onNavigate }) => {
           shadow-xl transition-all duration-700 ease-out ${mounted ? "opacity-100" : "opacity-0"}`}
         >
           <h3 className="text-2xl md:text-3xl font-bold mb-2">Ready to transform your productivity?</h3>
-          <p className="text-lg text-emerald-50/90 mb-6">Join thousands of users who are getting more done with TaskMaster</p>
+          <p className="text-lg text-emerald-50/90 mb-6">Join thousands of users who are getting more done with Chetro </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => onNavigate && onNavigate("signup")}
