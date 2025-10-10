@@ -99,7 +99,7 @@ const Navbar = ({ currentPage, onNavigate, isAuthenticated = false, user = null,
             <div className="flex items-center">
               <button
                 onClick={() => handleNavigation('home')}
-                className="flex items-center space-x-2 group"
+                className="flex items-center space-x-2 group hover:cursor-pointer"
               >
                 <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 p-2 rounded-lg shadow-lg shadow-blue-500/50 group-hover:shadow-blue-400/60 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <CheckSquare className="h-6 w-6 text-white transition-transform duration-300 group-hover:scale-110" />
