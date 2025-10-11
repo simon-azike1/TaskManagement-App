@@ -26,8 +26,8 @@ const LandingPage = ({ onNavigate, isAuthenticated }) => {
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-black dark:via-black dark:to-black">
       {/* Background video — replace with your assets */}
-      <div className="absolute inset-0 -z-10">
-      </div>
+      {/* <div className="absolute inset-0 -z-10">
+      </div> */}
       {/* Hero with side image */}
       <section className="relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-14">
